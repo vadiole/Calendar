@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+
     <application
         android:name=".CalendarApp"
         android:allowBackup="false"
@@ -14,7 +16,7 @@
         android:theme="@style/Theme.Calendar">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".CalendarActivity"
             android:configChanges="uiMode"
             android:exported="true"
             android:launchMode="singleTask">

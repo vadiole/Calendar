@@ -2,19 +2,15 @@ package vadiole.calendar
 
 import android.app.Activity
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
-import android.util.TypedValue
-import android.view.Gravity
-import android.widget.FrameLayout
-import android.widget.TextView
 import androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowCompat.setDecorFitsSystemWindows
 import androidx.core.view.WindowInsetsCompat.Type.navigationBars
 import androidx.core.view.WindowInsetsCompat.Type.statusBars
+import vadiole.calendar.ui.Content
 
-class MainActivity : Activity(), ResourcesOwner {
+class CalendarActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,13 +24,7 @@ class MainActivity : Activity(), ResourcesOwner {
         }
 
         setContentView(
-            TextView(this).apply {
-                layoutParams = FrameLayout.LayoutParams(matchParent, matchParent)
-                gravity = Gravity.CENTER
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, 14f.dp)
-                setTextColor(Color.GRAY)
-                text = "Calendar by vadiole"
-            }
+            Content(this, CalendarApp.AppContainer.calendarRepository)
         )
     }
 
