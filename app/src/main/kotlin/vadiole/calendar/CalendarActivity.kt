@@ -8,7 +8,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowCompat.setDecorFitsSystemWindows
 import androidx.core.view.WindowInsetsCompat.Type.navigationBars
 import androidx.core.view.WindowInsetsCompat.Type.statusBars
-import vadiole.calendar.ui.Content
+import vadiole.calendar.ui.UINavigationController
 
 class CalendarActivity : Activity() {
 
@@ -24,7 +24,9 @@ class CalendarActivity : Activity() {
         }
 
         setContentView(
-            Content(this, CalendarApp.AppContainer.calendarRepository)
+            UINavigationController(this).apply {
+                push(CalendarViewController(context), false)
+            }
         )
     }
 
