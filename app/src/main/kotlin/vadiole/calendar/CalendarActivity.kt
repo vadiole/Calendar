@@ -2,32 +2,59 @@ package vadiole.calendar
 
 import android.app.Activity
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
-import androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
+import androidx.annotation.RequiresApi
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowCompat.setDecorFitsSystemWindows
-import androidx.core.view.WindowInsetsCompat.Type.navigationBars
-import androidx.core.view.WindowInsetsCompat.Type.statusBars
 import vadiole.calendar.ui.UINavigationController
 
 class CalendarActivity : Activity() {
 
+    private var backInvokedHandler: (() -> Unit)? = null
+    private var backCallbackEnabled = false
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    private val onBackInvokedCallback: OnBackInvokedCallback = OnBackInvokedCallback {
+        backInvokedHandler?.invoke()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setDecorFitsSystemWindows(window, false)
-        setOnApplyWindowInsetsListener(window.decorView) { v, insets ->
-            v.setPadding(
-                0, insets.getInsets(statusBars()).top,
-                0, insets.getInsets(navigationBars()).bottom
-            )
-            insets
-        }
 
         setContentView(
-            UINavigationController(this).apply {
+            UINavigationController(
+                context = this,
+                finishListener = {
+                    @Suppress("DEPRECATION") // It's okay to use onBackPressed() to close the activity
+                    onBackPressed()
+                },
+                canPopListener = { canPop ->
+                    setBackCallbackEnabled(enabled = canPop)
+                }
+            ).apply {
                 push(CalendarViewController(context), false)
+                backInvokedHandler = {
+                    pop(animated = true)
+                }
             }
         )
+    }
+
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+    override fun onBackPressed() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return super.onBackPressed()
+        } else {
+            if (backCallbackEnabled) {
+                backInvokedHandler?.invoke()
+            } else {
+                super.onBackPressed()
+            }
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -43,9 +70,20 @@ class CalendarActivity : Activity() {
     }
 
     private fun updateSystemBars(configuration: Configuration) {
-        val isNightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
         val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-        insetsController.isAppearanceLightStatusBars = !isNightMode
-        insetsController.isAppearanceLightNavigationBars = !isNightMode
+        val isLightMode = configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK != Configuration.UI_MODE_NIGHT_YES
+        insetsController.isAppearanceLightStatusBars = isLightMode
+        insetsController.isAppearanceLightNavigationBars = isLightMode
+    }
+
+    private fun setBackCallbackEnabled(enabled: Boolean) {
+        backCallbackEnabled = enabled
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (enabled) {
+                onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, onBackInvokedCallback)
+            } else {
+                onBackInvokedDispatcher.unregisterOnBackInvokedCallback(onBackInvokedCallback)
+            }
+        }
     }
 }
