@@ -2,9 +2,12 @@ package vadiole.calendar.ui
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import vadiole.calendar.ResourcesOwner
 
 class CalendarView(
@@ -18,15 +21,27 @@ class CalendarView(
         gravity = Gravity.CENTER
     }
     private val settings = TextView(context).apply {
+        layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT).apply {
+            gravity = Gravity.TOP or Gravity.RIGHT
+        }
         text = "Settings"
         setPadding(16.dp, 16.dp, 16.dp, 16.dp)
         setTextColor(Color.BLACK)
-        gravity = Gravity.TOP or Gravity.RIGHT
+        background = ColorDrawable(Color.RED)
+        gravity = Gravity.CENTER
         setOnClickListener { onSettingsClick() }
     }
 
     init {
         addView(textView)
         addView(settings)
+
+        ViewCompat.setOnApplyWindowInsetsListener(this) { v, insets ->
+            v.setPadding(
+                0, insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
+                0, insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            )
+            insets
+        }
     }
 }
